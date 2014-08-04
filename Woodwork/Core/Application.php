@@ -51,7 +51,7 @@ class Application {
 	{
 		$this->_request = new Request();
 
-		$controllerName = ucfirst($this->_request->getController()) . 'Controller';
+		$controllerName = '\\Woodwork\\Controllers\\'.ucfirst($this->_request->getController()) . 'Controller';
 		$action = $this->_request->getAction();
 
 		if (!class_exists($controllerName))

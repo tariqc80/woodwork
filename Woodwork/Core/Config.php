@@ -6,22 +6,34 @@ class Config {
 
 	public function __construct( $filename ) 
 	{
-		if ( is_string( $filename ) ) 
+		if ( !is_string( $filename ) ) 
 		{
-			$this->readConfigFromFile( $filename );
+			throw new \Exception( 'Configuration filename must be a string.' );
 		}
+	
+		if ( !file_exists( $filename ) )
+		{
+			throw new \Exception( "Configuration file '$filename' not found!" );
+		}
+
+		$this->readConfigFromFile( $filename );
 	}
 
 	public function readConfigFromFile( $filename ) 
 	{
 		$success = false;
 
-		if (file_exists($filename))
+		if ( file_exists($filename) )
 		{
 			$fhandle = @fopen($filename, 'r');
-			if ($fhandle) 
+			if (!$fhandle)
 			{
-				while ($line = fgets($fhandle))
+				throw new \Exception( 'Could not open configuration file for reading.' );
+			} 
+
+			while ($line = fgets($fhandle))
+			{
+				if ( preg_match('/^[^=]*=[^=]*$/', $line) )
 				{
 					list($key, $value) = explode('=', $line);
 					if ( isset($key) )
@@ -29,13 +41,15 @@ class Config {
 						$this->_variables[strtolower($key)] = trim($value);
 					}
 				}
+				else
+				{
+					fclose($fhandle);
+					throw new \Exception( 'Configuration file provided is not formatted correctly.' );
+				}
 			}
 			
 			fclose($fhandle);
-			$sucess = true;
 		}
-
-		return $success;
 	}
 
 	public function __get( $name ) 
